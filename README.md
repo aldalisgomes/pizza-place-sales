@@ -3,7 +3,7 @@
 ## Visão Geral do Projeto
 Este estudo de caso aborda o pipeline de dados da fictícia **Pizza Place**, desde a extração de dados denormalizados até o suporte à tomada de decisão.
 
-O objetivo foi reestruturar uma base de dados relacional que apresentava problemas de redundância e anomalias de atualização, aplicando as **Formas Normais (1FN e 3FN)**, automatizando a carga de dados no **SQL Server** via **Python** e extraindo *insights* estratégicos de negócio utilizando **T-SQL**.
+O objetivo foi reestruturar uma base de dados relacional que apresentava problemas de redundância e anomalias de atualização, aplicando as **Formas Normais (1FN e 3FN)**, automatizando a carga de dados no **SQL Server** via **Python** e extraindo informações  de negócio utilizando **T-SQL**.
 
 ---
 
@@ -23,7 +23,7 @@ O objetivo foi reestruturar uma base de dados relacional que apresentava problem
 ### Governança e Qualidade de Dados
 Foi desenvolvido um **Dicionário de Dados**  para a modelagem física, garantindo a integridade do banco através de Constraints:
 * **Primary Keys (PK) e Foreign Keys (FK):** Para garantir o relacionamento correto entre os pedidos, pizzas, categorias e ingredientes.
-* **CHECK Constraints:** Para blindar regras de negócio no banco (ex: `price > 0`, `quantity > 0`, validação do ano limite em `date` e padronização dos tamanhos `IN ('S', 'M', 'L', 'XL', 'XXL')`).
+* **CHECK Constraints:** Para as regras de negócio no banco (ex: `price > 0`, `quantity > 0`, validação do ano limite em `date` e padronização dos tamanhos `IN ('S', 'M', 'L', 'XL', 'XXL')`).
 
 ### Processo de Normalização
 1. **Primeira Forma Normal (1FN):** A coluna de ingredientes continha múltiplos valores separados por vírgula no arquivo de origem. Foi feita a decomposição desses valores e a criação da tabela associativa `pizza_type_ingredients`.
