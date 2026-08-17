@@ -68,10 +68,10 @@ cd pizza_sales
 Install the required Python packages:
 pip install -r requirements.txt
 
-4. Start SQL Server via Docker
+### 4. Start SQL Server via Docker
 Run your SQL Server container using Docker Compose (or start your local instance):
 docker-compose up -d
 
-5. Run the Data Pipeline
+### 5. Run the Data Pipeline
 Execute the main script to audit data, apply normalization rules, create the database structure, and load the data automatically:
 python src/03_normalization_and_new_tables.py
