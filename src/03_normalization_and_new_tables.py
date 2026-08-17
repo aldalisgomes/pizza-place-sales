@@ -1,5 +1,7 @@
 #%%
 import pandas as pd
+from sqlalchemy import create_engine, text
+import urllib
 
 df_orders = pd.read_csv('data/orders.csv')
 df_order_details = pd.read_csv('data/order_details.csv')
@@ -21,35 +23,39 @@ df_categories = df_categories[['category_id', 'category_name']] # Reordering col
 df_pizza_types = df_pizza_types.merge(df_categories, left_on='category', right_on='category_name')
 # Select only the relevant columns for the new table
 df_pizza_types_clean = df_pizza_types[['pizza_type_id', 'name', 'category_id']]
+
 # %%
 # 4. Create the 'ingredients' Table and the Associative 'pizza_type_ingredients' Table
 # First, we take the ingredients column and split the string by commas
 df_ingredients_temp = df_pizza_types[['pizza_type_id', 'ingredients']].copy()
 df_ingredients_temp['ingredients'] = df_ingredients_temp['ingredients'].str.split(',')
+
 # %%
 # 'explode' transforms the list of ingredients into multiple rows, repeating the pizza_type_id
 df_exploded = df_ingredients_temp.explode('ingredients')
-# RRemove leading/trailing whitespaces after splitting by comma
+# Remove leading/trailing whitespaces after splitting by comma
 df_exploded['ingredients'] = df_exploded['ingredients'].str.strip()
-# Standardization:*
+# Standardization:
 df_exploded['ingredients'] = df_exploded['ingredients'].replace('Artichoke', 'Artichokes')
-# %%# --- APPLICATION OF BUSINESS RULES ---
+
+# %%
+# --- APPLICATION OF BUSINESS RULES ---
 # 4.1. Add Mozzarella Cheese to all pizzas that don't have it yet
 mozzarella_pizzas = pd.DataFrame({
     'pizza_type_id': df_pizza_types['pizza_type_id'],
-    'ingredients': 'Mozzarella Cheese'})
+    'ingredients': 'Mozzarella Cheese'
+})
 
 # 4.2. Add Tomato Sauce only where no other "Sauce" is specified
 # Filtering pizzas that DO NOT contain the word 'Sauce' in their original ingredients
 pizzas_without_sauce = df_pizza_types[~df_pizza_types['ingredients'].str.contains('Sauce', case=False)]
 tomato_pizzas = pd.DataFrame({
     'pizza_type_id': pizzas_without_sauce['pizza_type_id'],
-    'ingredients': 'Tomato Sauce'})
+    'ingredients': 'Tomato Sauce'
+})
 
 # Merge the original ingredients with the new rules and remove duplicates (in case cheese was already on the list)
 df_exploded = pd.concat([df_exploded, mozzarella_pizzas, tomato_pizzas]).drop_duplicates()
-
-
 
 #%%
 # Extraction of unique ingredients for the final Ingredients table
@@ -57,12 +63,11 @@ unique_ingredients = df_exploded['ingredients'].unique()
 df_ingredients = pd.DataFrame({'ingredient_name': unique_ingredients})
 df_ingredients['ingredient_id'] = range(1, len(df_ingredients) + 1)
 df_ingredients = df_ingredients[['ingredient_id', 'ingredient_name']]
+
 # %%
 # Create the associative table by crossing the exploded data with the generated IDs
 df_pizza_type_ingredients = df_exploded.merge(df_ingredients, left_on='ingredients', right_on='ingredient_name')
 df_pizza_type_ingredients = df_pizza_type_ingredients[['pizza_type_id', 'ingredient_id']]
-# %%
-
 
 #%%
 print("--- STARTING DATA AUDIT ---")
@@ -74,6 +79,7 @@ print(f" - order_id Nulls: {df_orders['order_id'].isnull().sum()}")
 print(f" - order_id Duplicates: {df_orders['order_id'].duplicated().sum()}")
 print(f" - date Nulls: {df_orders['date'].isnull().sum()}")
 print(f" - time Nulls: {df_orders['time'].isnull().sum()}")
+
 #%%
 # CHECK (date >= '2015-01-01' AND date <= '2015-12-31')
 # Converting to datetime temporarily to ensure checking
@@ -115,7 +121,7 @@ print(f" - Prices <= 0: {len(invalid_price)}")
 
 #%%
 # 4. Validation: pizza_types (using clean df)
-print("\n[4]Checking df_pizza_types_clean...")
+print("\n[4] Checking df_pizza_types_clean...")
 print(f" - pizza_type_id Nulls: {df_pizza_types_clean['pizza_type_id'].isnull().sum()}")
 print(f" - pizza_type_id Duplicates: {df_pizza_types_clean['pizza_type_id'].duplicated().sum()}")
 print(f" - name Nulls: {df_pizza_types_clean['name'].isnull().sum()}")
@@ -147,58 +153,64 @@ print(f" - ingredient_id Nulls: {df_pizza_type_ingredients['ingredient_id'].isnu
 # Composite UNIQUE: Checks if the same pizza and ingredient combination exists more than once
 composite_duplicates = df_pizza_type_ingredients.duplicated(subset=['pizza_type_id', 'ingredient_id']).sum()
 print(f" - Duplicate Pizza+Ingredient combinations: {composite_duplicates}")
-#%%
+
 print("\n--- END ---")
-# %%
-#%% --- SQL SERVER INGESTION (DOCKER) ---
-from sqlalchemy import create_engine, text # <-- ADICIONADO O TEXT AQUI
-import urllib
+
+#%% 
+# --- SQL SERVER INGESTION (DOCKER) ---
 
 # Ensures that special characters in the password don't break the connection
 password_encoded = urllib.parse.quote_plus("SenhaForte@2026!")
 
-# Connection String
-connection_string = (
-    f"mssql+pyodbc://sa:{password_encoded}@127.0.0.1:1433/PizzaSales"
+# 1. Initial engine connected to 'master' (required to run the database creation script)
+connection_string_master = (
+    f"mssql+pyodbc://sa:{password_encoded}@127.0.0.1:1433/master"
     "?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
 )
+engine_master = create_engine(connection_string_master)
 
-engine = create_engine(connection_string)
-
-# Dictionary mapping database tables -> DataFrames
+# Dictionary mapping database tables to DataFrames
 # THE ORDER IS MANDATORY to respect FKs (Foreign Keys)
 dataframes_to_load = {
-    'categories': df_categories,            # 1st (Base)
-    'pizza_types': df_pizza_types_clean,    # 2nd (Depends on Categories)
-    'ingredients': df_ingredients,          # 3rd (Base)
+    'categories': df_categories,                         # 1st (Base)
+    'pizza_types': df_pizza_types_clean,                 # 2nd (Depends on Categories)
+    'ingredients': df_ingredients,                       # 3rd (Base)
     'pizza_type_ingredients': df_pizza_type_ingredients, # 4th (Depends on PizzaTypes and Ingredients)
-    'pizzas': df_pizzas,                    # 5th (Depends on PizzaTypes)
-    'orders': df_orders,                    # 6th (Independent)
-    'order_details': df_order_details       # 7th (Depends on Orders and Pizzas)
+    'pizzas': df_pizzas,                                 # 5th (Depends on PizzaTypes)
+    'orders': df_orders,                                 # 6th (Independent)
+    'order_details': df_order_details                    # 7th (Depends on Orders and Pizzas)
 }
 
 # =====================================================================
-# <-- BLOCO NOVO ADICIONADO AQUI: Cria as tabelas antes de inserir os dados
+# Database structure creation
 print("--- CREATING DATABASE STRUCTURE ---")
-# Certifique-se de que o nome do arquivo SQL aqui seja o correto (ex: '01_create_tables_3.sql' ou '01_create_tables.sql')
+# Ensure the SQL file name here matches your actual file
 with open('01_create_tables.sql', 'r', encoding='utf-8') as file:
     sql_script = file.read()
 
 sql_commands = sql_script.split('GO')
 
-with engine.begin() as conn:
+# Execute database and table creation using the 'master' connection (with AUTOCOMMIT)
+with engine_master.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
     for command in sql_commands:
         if command.strip():
             conn.execute(text(command))
 print("[OK] Tables, keys, and constraints created successfully!")
 # =====================================================================
 
+# 2. Engine now pointing to the newly created 'PizzaSales' database to insert the data
+connection_string_sales = (
+    f"mssql+pyodbc://sa:{password_encoded}@127.0.0.1:1433/PizzaSales"
+    "?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
+)
+engine_sales = create_engine(connection_string_sales)
+
 print("--- STARTING SQL SERVER LOAD ---")
 
 for table_name, df in dataframes_to_load.items():
     try:
         print(f"Uploading {table_name} ({len(df)} records)...")
-        df.to_sql(table_name, con=engine, if_exists='append', index=False)
+        df.to_sql(table_name, con=engine_sales, if_exists='append', index=False)
         print(f"[OK] {table_name} loaded successfully")
     except Exception as e:
         print(f"Error loading {table_name}: {e}")
