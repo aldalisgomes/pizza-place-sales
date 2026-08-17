@@ -1,39 +1,39 @@
-Pizza Place Sales — Modelagem, Ingestão e Análise de Dados
+# Pizza Place Sales — Data Modeling, Ingestion, and Analysis
 
-Visão Geral do Projeto
-Este estudo de caso aborda o pipeline de dados da fictícia **Pizza Place**, desde a extração de dados denormalizados até o suporte à tomada de decisão.
+## Project Overview
+This case study covers the data pipeline for the fictional **Pizza Place**, from extracting denormalized data to supporting decision-making.
 
-O objetivo foi reestruturar uma base de dados relacional que apresentava problemas de redundância e anomalias de atualização, aplicando as **Formas Normais (1FN e 3FN)**, automatizando a carga de dados no **SQL Server** via **Python** e extraindo informações  de negócio utilizando **T-SQL**.
-
----
-Tecnologias Utilizadas
-
-* **Linguagem / Bibliotecas:** Python (Pandas, SQLAlchemy, PyODBC)
-* **Banco de Dados:** SQL Server (T-SQL)
-* **Containerização:** Docker & Docker Compose
-* **IDE / Ferramentas:** VS Code (Extensions: SQL Server, Python)
-* **Modelagem de Dados:** Lucidchart (Notações Peter Chen e Crow's Foot)
-* **Controle de Versão:** Git & GitHub
+The objective was to restructure a relational database that presented redundancy problems and update anomalies by applying **Normal Forms (1NF and 3NF)**, automating the data load into **SQL Server** via **Python**, and extracting business information using **T-SQL**.
 
 ---
+## Technologies Used
 
-Arquitetura do Banco & Modelagem ER
+* **Language / Libraries:** Python (Pandas, SQLAlchemy, PyODBC)
+* **Database:** SQL Server (T-SQL)
+* **Containerization:** Docker & Docker Compose
+* **IDE / Tools:** VS Code (Extensions: SQL Server, Python)
+* **Data Modeling:** Lucidchart (Peter Chen and Crow's Foot notations)
+* **Version Control:** Git & GitHub
 
-Governança e Qualidade de Dados
-Foi desenvolvido um **Dicionário de Dados**  para a modelagem física, garantindo a integridade do banco através de Constraints:
-* **Primary Keys (PK) e Foreign Keys (FK):** Para garantir o relacionamento correto entre os pedidos, pizzas, categorias e ingredientes.
-* **CHECK Constraints:** Para as regras de negócio no banco (ex: `price > 0`, `quantity > 0`, validação do ano limite em `date` e padronização dos tamanhos `IN ('S', 'M', 'L', 'XL', 'XXL')`).
+---
 
-Processo de Normalização
-1. **Primeira Forma Normal (1FN):** A coluna de ingredientes continha múltiplos valores separados por vírgula no arquivo de origem. Foi feita a decomposição desses valores e a criação da tabela associativa `pizza_type_ingredients`.
-2. **Terceira Forma Normal (3FN):** As categorias das pizzas estavam armazenadas de forma redundante como texto na tabela de tipos. Foram isoladas em uma nova tabela dimensão chamada `categories` com identificador numérico único.
-3. **Regras de Negócio Aplicadas via Python:**
-   * Adição de *Mozzarella Cheese* em pizzas que não contavam com queijo.
-   * Adição de *Tomato Sauce* como padrão para receitas sem molho específico.
+## Database Architecture & ER Modeling
 
+### Data Governance and Quality
+A **Data Dictionary** was developed for the physical modeling, ensuring database integrity through Constraints:
+* **Primary Keys (PK) and Foreign Keys (FK):** To ensure correct relationships between orders, pizzas, categories, and ingredients.
+* **CHECK Constraints:** For business rules in the database (e.g., `price > 0`, `quantity > 0`, validation of the limit year in `date`, and standardization of sizes `IN ('S', 'M', 'L', 'XL', 'XXL')`).
 
+### Normalization Process
+1. **First Normal Form (1NF):** The ingredients column contained multiple comma-separated values in the source file. These values were decomposed, and the associative table `pizza_type_ingredients` was created.
+2. **Third Normal Form (3NF):** Pizza categories were stored redundantly as text in the types table. They were isolated into a new dimension table named `categories` with a unique numeric identifier.
+3. **Business Rules Applied via Python:**
+   * Addition of *Mozzarella Cheese* to all pizza types to standardize the ingredient list.
+   * Addition of *Tomato Sauce* as a default for recipes without a specific sauce specified in the original description.
 
-Esquema Relacional (Diagrama ER)
+---
+
+## Relational Schema (ER Diagram)
 
 ```text
 [ categories ]
@@ -48,3 +48,5 @@ Esquema Relacional (Diagrama ER)
                          ┌───────< (N)                                         │
                          │ (1)                                                 │ (1)
                   [ ingredients ]                                         [ orders ]
+
+                  
