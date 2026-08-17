@@ -15,7 +15,7 @@ db-down:
 
 # Runs the ETL pipeline
 run:
-	python src/data_pipeline.py
+	python src/03_normalization_and_new_tables.py
 
 # Cleans up temporary Python files
 clean:
