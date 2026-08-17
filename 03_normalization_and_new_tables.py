@@ -1,10 +1,10 @@
 #%%
 import pandas as pd
 
-df_orders = pd.read_csv('orders.csv')
-df_order_details = pd.read_csv('order_details.csv')
-df_pizzas = pd.read_csv('pizzas.csv')
-df_pizza_types = pd.read_csv('pizza_types.csv', encoding='latin1')
+df_orders = pd.read_csv('data/orders.csv')
+df_order_details = pd.read_csv('data/order_details.csv')
+df_pizzas = pd.read_csv('data/pizzas.csv')
+df_pizza_types = pd.read_csv('data/pizza_types.csv', encoding='latin1')
 
 # %%
 # --- TREATMENT AND NORMALIZATION ---
@@ -151,7 +151,7 @@ print(f" - Duplicate Pizza+Ingredient combinations: {composite_duplicates}")
 print("\n--- END ---")
 # %%
 #%% --- SQL SERVER INGESTION (DOCKER) ---
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text # <-- ADICIONADO O TEXT AQUI
 import urllib
 
 # Ensures that special characters in the password don't break the connection
@@ -176,6 +176,22 @@ dataframes_to_load = {
     'orders': df_orders,                    # 6th (Independent)
     'order_details': df_order_details       # 7th (Depends on Orders and Pizzas)
 }
+
+# =====================================================================
+# <-- BLOCO NOVO ADICIONADO AQUI: Cria as tabelas antes de inserir os dados
+print("--- CREATING DATABASE STRUCTURE ---")
+# Certifique-se de que o nome do arquivo SQL aqui seja o correto (ex: '01_create_tables_3.sql' ou '01_create_tables.sql')
+with open('01_create_tables.sql', 'r', encoding='utf-8') as file:
+    sql_script = file.read()
+
+sql_commands = sql_script.split('GO')
+
+with engine.begin() as conn:
+    for command in sql_commands:
+        if command.strip():
+            conn.execute(text(command))
+print("[OK] Tables, keys, and constraints created successfully!")
+# =====================================================================
 
 print("--- STARTING SQL SERVER LOAD ---")
 
