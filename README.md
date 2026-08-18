@@ -41,7 +41,6 @@ If you want to clone and run this project on your machine, follow these steps:
 * SQL Server ODBC Driver 17 (or compatible) installed.
 
 ### 2. Clone the Repository
-```bash
 git clone [https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git](https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git)
 cd pizza_sales
 
