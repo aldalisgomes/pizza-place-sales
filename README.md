@@ -31,25 +31,6 @@ A **Data Dictionary** was developed for the physical modeling, ensuring database
    * Addition of *Mozzarella Cheese* to all pizza types to standardize the ingredient list.
    * Addition of *Tomato Sauce* as a default for recipes without a specific sauce specified in the original description.
 
----
-
-## Relational Schema (ER Diagram)
-
-```text
-[ categories ]
-      │ (1)
-      │
-      └───────< (N) [ pizza_types ] ───(1)───────< (N) [ pizzas ]
-                         │                                  │ (1)
-                         │ (1)                              │
-                         │                                  └───────< (N) [ order_details ]
-                         └───────< (N)                                         │ (N)
-                                    [ pizza_type_ingredients ]                 │
-                         ┌───────< (N)                                         │
-                         │ (1)                                                 │ (1)
-                  [ ingredients ]                                         [ orders ]
-
-                  
 ## How to Run This Project Locally
 
 If you want to clone and run this project on your machine, follow these steps:
@@ -75,3 +56,23 @@ docker-compose up -d
 ### 5. Run the Data Pipeline
 Execute the main script to audit data, apply normalization rules, create the database structure, and load the data automatically:
 python src/03_normalization_and_new_tables.py
+
+---
+
+## Relational Schema (ER Diagram)
+
+```text
+[ categories ]
+      │ (1)
+      │
+      └───────< (N) [ pizza_types ] ───(1)───────< (N) [ pizzas ]
+                         │                                  │ (1)
+                         │ (1)                              │
+                         │                                  └───────< (N) [ order_details ]
+                         └───────< (N)                                         │ (N)
+                                    [ pizza_type_ingredients ]                 │
+                         ┌───────< (N)                                         │
+                         │ (1)                                                 │ (1)
+                  [ ingredients ]                                         [ orders ]
+
+                  
