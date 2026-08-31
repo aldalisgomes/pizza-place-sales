@@ -15,7 +15,8 @@ db-down:
 
 # Runs the ETL pipeline
 run:
-	python src/03_normalization_and_new_tables.py
+	docker build -t pizza-pipeline .
+	docker run --rm --network docker_default pizza-pipeline
 
 # Cleans up temporary Python files
 clean:

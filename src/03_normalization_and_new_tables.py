@@ -164,7 +164,7 @@ password_encoded = urllib.parse.quote_plus("SenhaForte@2026!")
 
 # 1. Initial engine connected to 'master' (required to run the database creation script)
 connection_string_master = (
-    f"mssql+pyodbc://sa:{password_encoded}@127.0.0.1:1433/master"
+    f"mssql+pyodbc://sa:{password_encoded}@pizza_sql_server:1433/master"
     "?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
 )
 engine_master = create_engine(connection_string_master)
@@ -200,7 +200,7 @@ print("[OK] Tables, keys, and constraints created successfully!")
 
 # 2. Engine now pointing to the newly created 'PizzaSales' database to insert the data
 connection_string_sales = (
-    f"mssql+pyodbc://sa:{password_encoded}@127.0.0.1:1433/PizzaSales"
+    f"mssql+pyodbc://sa:{password_encoded}@pizza_sql_server:1433/PizzaSales"
     "?driver=ODBC+Driver+17+for+SQL+Server&TrustServerCertificate=yes"
 )
 engine_sales = create_engine(connection_string_sales)

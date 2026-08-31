@@ -181,3 +181,4 @@ JOIN pizza_type_ingredients pti ON i.ingredient_id = pti.ingredient_id
 JOIN pizza_types pt ON pti.pizza_type_id = pt.pizza_type_id
 JOIN categories c ON pt.category_id = c.category_id
 WHERE c.category_name = 'Meat';
+
