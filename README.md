@@ -36,25 +36,20 @@ A **Data Dictionary** was developed for the physical modeling, ensuring database
 If you want to clone and run this project on your machine, follow these steps:
 
 ### 1. Prerequisites
-* Python (version 3.10+) installed.
 * Docker Desktop installed and running.
-* SQL Server ODBC Driver 17 (or compatible) installed.
 
 ### 2. Clone the Repository
-git clone [https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git](https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git)
+git clone https://github.com/aldalisgomes/pizza-place-sales.git
 cd pizza_sales
 
-### 3. Set Up the Environment
-Install the required Python packages:
-pip install -r requirements.txt
+### 3. Start SQL Server via Docker
+Run the database container using Docker Compose:
+docker-compose -f docker/docker-compose.yml up -d
 
-### 4. Start SQL Server via Docker
-Run your SQL Server container using Docker Compose (or start your local instance):
-docker-compose up -d
-
-### 5. Run the Data Pipeline
-Execute the main script to audit data, apply normalization rules, create the database structure, and load the data automatically:
-python src/03_normalization_and_new_tables.py
+### 4. Run the Data Pipeline
+Build the application container and run the complete ETL pipeline (which builds the image, connects via the Docker network, audits data, applies normalization rules, and loads the database):
+docker build -t pizza-pipeline .
+docker run --rm --network docker_default pizza-pipeline
 
 ---
 
