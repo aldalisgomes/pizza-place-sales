@@ -85,7 +85,7 @@ pizza_sales/
 ### 2. Clone the Repository
 ```bash
 git clone https://github.com/aldalisgomes/pizza-place-sales.git
-cd pizza_sales
+cd pizza-place-sales
 ```
 
 ### 3. Start the Infrastructure (SQL Server)
