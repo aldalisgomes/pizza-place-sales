@@ -1,23 +1,28 @@
-.PHONY: setup db-up db-down run clean
+.PHONY: help setup db-up db-down run clean
 
-# Installs Python dependencies
-setup:
+# Variables
+DOCKER_COMPOSE_FILE = docker/docker-compose.yml
+IMAGE_NAME = pizza-pipeline
+
+help: ## Show this help message
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
+
+setup: ## Install Python dependencies locally (for development)
 	pip install -r requirements.txt
 
-# Starts the database with Docker in the background (detached)
-db-up:
-	docker-compose -f docker/docker-compose.yml up -d
-	@echo "Waiting for SQL Server to start... (wait about 15 seconds before running the pipeline)"
+db-up: ## Start the SQL Server database with Docker in the background
+	docker-compose -f $(DOCKER_COMPOSE_FILE) up -d
+	@echo "Waiting for SQL Server to start... (Please wait about 15 seconds before running the pipeline)"
 
-# Stops and removes the database containers
-db-down:
-	docker-compose -f docker/docker-compose.yml down
+db-down: ## Stop and remove the database containers and networks
+	docker-compose -f $(DOCKER_COMPOSE_FILE) down
 
-# Runs the ETL pipeline
-run:
-	docker build -t pizza-pipeline .
-	docker run --rm --network docker_default pizza-pipeline
+run: ## Build the Docker image and run the complete ETL pipeline
+	docker build -t $(IMAGE_NAME) .
+	docker run --rm --network docker_default $(IMAGE_NAME)
 
-# Cleans up temporary Python files
-clean:
+clean: ## Clean up temporary Python cache files
 	find . -type d -name "__pycache__" -exec rm -rf {} +

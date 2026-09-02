@@ -1,60 +1,64 @@
-# Pizza Place Sales — Data Modeling, Ingestion, and Analysis
+# Pizza Place Sales — Data Engineering & Analytics Pipeline
+
+[![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
+[![SQL Server](https://img.shields.io/badge/SQL_Server-2022-red.svg)](https://www.microsoft.com/en-us/sql-server)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://www.docker.com/)
+
+ **Repository:** [https://github.com/aldalisgomes/pizza-place-sales](https://github.com/aldalisgomes/pizza-place-sales)
 
 ## Project Overview
-This case study covers the data pipeline for the fictional **Pizza Place**, from extracting denormalized data to supporting decision-making.
+This case study covers a complete end-to-end data pipeline for a fictional **Pizza Place**, going from extracting denormalized CSV data to supporting advanced business decision-making.
 
-The objective was to restructure a relational database that presented redundancy problems and update anomalies by applying **Normal Forms (1NF and 3NF)**, automating the data load into **SQL Server** via **Python**, and extracting business information using **T-SQL**.
-
----
-## Technologies Used
-
-* **Language / Libraries:** Python (Pandas, SQLAlchemy, PyODBC)
-* **Database:** SQL Server (T-SQL)
-* **Containerization:** Docker & Docker Compose
-* **IDE / Tools:** VS Code (Extensions: SQL Server, Python)
-* **Data Modeling:** Lucidchart (Peter Chen and Crow's Foot notations)
-* **Version Control:** Git & GitHub
+The core objective was to restructure a relational database that suffered from redundancy and update anomalies. This was achieved by:
+1. Applying **Normal Forms (1NF and 3NF)** to clean the data.
+2. Automating the ETL data load into **SQL Server** using **Python** (Pandas, SQLAlchemy).
+3. Extracting business intelligence using advanced **T-SQL**.
 
 ---
 
-## Database Architecture & ER Modeling
+## Technologies & Tools
+* **Languages:** Python (Pandas, SQLAlchemy, PyODBC), T-SQL
+* **Database:** Microsoft SQL Server (Containerized)
+* **Infrastructure:** Docker & Docker Compose
+* **Automation:** Makefile
+* **Modeling:** Peter Chen and Crow's Foot notations
 
-### Data Governance and Quality
-A **Data Dictionary** was developed for the physical modeling, ensuring database integrity through Constraints:
-* **Primary Keys (PK) and Foreign Keys (FK):** To ensure correct relationships between orders, pizzas, categories, and ingredients.
-* **CHECK Constraints:** For business rules in the database (e.g., `price > 0`, `quantity > 0`, validation of the limit year in `date`, and standardization of sizes `IN ('S', 'M', 'L', 'XL', 'XXL')`).
+---
+
+## Project Structure
+```text
+pizza_sales/
+├── data/
+│   ├── data_dictionary.csv
+│   ├── order_details.csv
+│   ├── orders.csv
+│   ├── pizza_types.csv
+│   └── pizzas.csv
+├── docker/
+│   └── docker-compose.yml
+├── src/
+│   └── 03_normalization_and_new_tables.py
+├── 01_create_tables.sql
+├── 02_analysis_queries.sql
+├── Dockerfile
+├── Makefile
+├── projeto 1 - pizzaria (2).pdf
+├── README.md
+└── requirements.txt
+```
+
+---
+
+## Database Architecture & Data Modeling
 
 ### Normalization Process
-1. **First Normal Form (1NF):** The ingredients column contained multiple comma-separated values in the source file. These values were decomposed, and the associative table `pizza_type_ingredients` was created.
-2. **Third Normal Form (3NF):** Pizza categories were stored redundantly as text in the types table. They were isolated into a new dimension table named `categories` with a unique numeric identifier.
-3. **Business Rules Applied via Python:**
-   * Addition of *Mozzarella Cheese* to all pizza types to standardize the ingredient list.
-   * Addition of *Tomato Sauce* as a default for recipes without a specific sauce specified in the original description.
+1. **First Normal Form (1NF):** The original source data contained an `ingredients` column with multiple comma-separated values. These were decomposed into an atomic structure, creating the associative table `pizza_type_ingredients`.
+2. **Third Normal Form (3NF):** Pizza categories were originally stored as redundant text. They were normalized into a separate dimension table (`categories`) with unique numeric identifiers.
+3. **Data Quality & Business Rules (via Python):**
+   * Default addition of *Mozzarella Cheese* to all pizzas to standardize recipes.
+   * Default addition of *Tomato Sauce* for pizzas without a specified sauce.
 
-## How to Run This Project Locally
-
-If you want to clone and run this project on your machine, follow these steps:
-
-### 1. Prerequisites
-* Docker Desktop installed and running.
-
-### 2. Clone the Repository
-git clone https://github.com/aldalisgomes/pizza-place-sales.git
-cd pizza_sales
-
-### 3. Start SQL Server via Docker
-Run the database container using Docker Compose:
-docker-compose -f docker/docker-compose.yml up -d
-
-### 4. Run the Data Pipeline
-Build the application container and run the complete ETL pipeline (which builds the image, connects via the Docker network, audits data, applies normalization rules, and loads the database):
-docker build -t pizza-pipeline .
-docker run --rm --network docker_default pizza-pipeline
-
----
-
-## Relational Schema (ER Diagram)
-
+### Entity Relationship Diagram (ERD)
 ```text
 [ categories ]
       │ (1)
@@ -68,5 +72,46 @@ docker run --rm --network docker_default pizza-pipeline
                          ┌───────< (N)                                         │
                          │ (1)                                                 │ (1)
                   [ ingredients ]                                         [ orders ]
+```
 
-                  
+---
+
+## How to Run This Project Locally
+
+### 1. Prerequisites
+* **Docker Desktop** installed and running.
+* **Make** installed (optional, but recommended for ease of use).
+
+### 2. Clone the Repository
+```bash
+git clone https://github.com/aldalisgomes/pizza-place-sales.git
+cd pizza_sales
+```
+
+### 3. Start the Infrastructure (SQL Server)
+Use the provided `Makefile` to quickly spin up the database container:
+```bash
+make db-up
+```
+*(Wait approximately 15 seconds for SQL Server to initialize).*
+
+### 4. Run the ETL Pipeline
+Build the Python application container and run the complete ETL pipeline. This step builds the image, connects to the Docker network, audits data, applies normalization rules, and loads the SQL Server database:
+```bash
+make run
+```
+
+### 5. Tear Down
+Once finished, you can safely shut down and remove the containers:
+```bash
+make db-down
+```
+
+---
+
+## Analytics Highlights
+The project includes an advanced SQL script (`02_analysis_queries.sql`) containing:
+* **Complex Filtering:** Usage of `BETWEEN`, `IN`, `LIKE`, and exclusions.
+* **Joins:** `INNER`, `LEFT`, `RIGHT`, and `FULL OUTER` joins to combine normalized tables and identify data orphans.
+* **Subqueries:** Identifying top-priced items and revenue percentage contributions.
+* **Set Operations:** `UNION`, `INTERSECT`, and `EXCEPT` to cross-reference ingredient usage across pizza categories.
