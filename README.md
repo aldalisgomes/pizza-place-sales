@@ -4,7 +4,7 @@
 [![SQL Server](https://img.shields.io/badge/SQL_Server-2022-red.svg)](https://www.microsoft.com/en-us/sql-server)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://www.docker.com/)
 
- **Repository:** [https://github.com/aldalisgomes/pizza-place-sales](https://github.com/aldalisgomes/pizza-place-sales)
+**Repository:** [https://github.com/aldalisgomes/pizza-place-sales](https://github.com/aldalisgomes/pizza-place-sales)
 
 ## Project Overview
 This case study covers a complete end-to-end data pipeline for a fictional **Pizza Place**, going from extracting denormalized CSV data to supporting advanced business decision-making.
@@ -27,7 +27,7 @@ The core objective was to restructure a relational database that suffered from r
 
 ## Project Structure
 ```text
-pizza_sales/
+pizza-place-sales/
 ├── data/
 │   ├── data_dictionary.csv
 │   ├── order_details.csv
@@ -81,37 +81,52 @@ pizza_sales/
 ### 1. Prerequisites
 * **Docker Desktop** installed and running.
 * **Make** installed (optional, but recommended for ease of use).
+* **Azure Data Studio** (or SQL Server Management Studio) for database validation.
 
 ### 2. Clone the Repository
+Open your Linux terminal (or WSL/Git Bash on Windows) and run:
 ```bash
 git clone https://github.com/aldalisgomes/pizza-place-sales.git
 cd pizza-place-sales
 ```
 
 ### 3. Start the Infrastructure (SQL Server)
-Use the provided `Makefile` to quickly spin up the database container:
+Use the provided Makefile to quickly spin up the database container:
 ```bash
 make db-up
 ```
-*(Wait approximately 15 seconds for SQL Server to initialize).*
+*Note: Docker will create the `docker_default` network and spin up the SQL Server container on port 1433. Wait approximately 15 seconds for SQL Server to initialize before proceeding.*
 
 ### 4. Run the ETL Pipeline
 Build the Python application container and run the complete ETL pipeline. This step builds the image, connects to the Docker network, audits data, applies normalization rules, and loads the SQL Server database:
 ```bash
 make run
 ```
+*You can follow the terminal output to see the detailed data audit (checking nulls and duplicates) and the successful loading of all tables.*
 
-### 5. Tear Down
-Once finished, you can safely shut down and remove the containers:
+### 5. Validation and Analysis
+Once the pipeline finishes successfully, you can validate the data and test the business queries:
+1. Open **Azure Data Studio** (or your preferred SQL client).
+2. Connect to the database using the following credentials:
+   * **Server:** `localhost,1433`
+   * **User:** `sa`
+   * **Password:** `SenhaForte@2026!`
+3. Open the `02_analysis_queries.sql` file and execute the queries to evaluate advanced JOINs, Subqueries, and Set Operations applied to the pizzeria's business rules.
+
+### 6. Tear Down & Clean Up
+Once finished, you can safely shut down the containers, remove the network, and clean up temporary Python cache files:
 ```bash
 make db-down
+make clean
 ```
+
+> **Tip:** You can run `make help` at any time to see all available commands, including `make setup` for installing dependencies locally.
 
 ---
 
 ## Analytics Highlights
-The project includes an advanced SQL script (`02_analysis_queries.sql`) containing:
-* **Complex Filtering:** Usage of `BETWEEN`, `IN`, `LIKE`, and exclusions.
+The project includes an SQL script (`02_analysis_queries.sql`) containing:
+* **Complex Filtering:** Usage of `BETWEEN`, `IN`, `LIKE`, and exclusions to segment sales periods and pizza types.
 * **Joins:** `INNER`, `LEFT`, `RIGHT`, and `FULL OUTER` joins to combine normalized tables and identify data orphans.
-* **Subqueries:** Identifying top-priced items and revenue percentage contributions.
+* **Subqueries:** Identifying top-priced items and calculating revenue percentage contributions by category.
 * **Set Operations:** `UNION`, `INTERSECT`, and `EXCEPT` to cross-reference ingredient usage across pizza categories.
