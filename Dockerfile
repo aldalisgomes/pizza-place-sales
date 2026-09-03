@@ -16,4 +16,4 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Default command when running the container
-CMD ["python", "src/03_normalization_and_new_tables.py"]tion_and_new_tables.py"]
+CMD ["python", "src/03_normalization_and_new_tables.py"]
