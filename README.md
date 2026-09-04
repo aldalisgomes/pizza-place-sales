@@ -37,9 +37,9 @@ pizza-place-sales/
 ├── docker/
 │   └── docker-compose.yml
 ├── src/
-│   └── 03_normalization_and_new_tables.py
-├── 01_create_tables.sql
-├── 02_analysis_queries.sql
+│   └── 01_etl_and_normalization.py
+├── 02_create_tables_reference.sql
+├── 03_analysis_queries.sql
 ├── Dockerfile
 ├── Makefile
 ├── projeto 1 - pizzaria (2).pdf
@@ -111,7 +111,7 @@ Once the pipeline finishes successfully, you can validate the data and test the 
    * **Server:** `localhost,1433`
    * **User:** `sa`
    * **Password:** `SenhaForte@2026!`
-3. Open the `02_analysis_queries.sql` file and execute the queries to evaluate advanced JOINs, Subqueries, and Set Operations applied to the pizzeria's business rules.
+3. Open the `03_analysis_queries.sql` file and execute the queries to evaluate advanced JOINs, Subqueries, and Set Operations applied to the pizzeria's business rules.
 
 ### 6. Tear Down & Clean Up
 Once finished, you can safely shut down the containers, remove the network, and clean up temporary Python cache files:
