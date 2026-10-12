@@ -185,7 +185,7 @@ dataframes_to_load = {
 # Database structure creation
 print("--- CREATING DATABASE STRUCTURE ---")
 # Ensure the SQL file name here matches your actual file
-with open('../02_create_tables_reference.sql', 'r', encoding='utf-8') as file:
+with open('01_create_tables.sql', 'r', encoding='utf-8') as file:
     sql_script = file.read()
 
 sql_commands = sql_script.split('GO')
